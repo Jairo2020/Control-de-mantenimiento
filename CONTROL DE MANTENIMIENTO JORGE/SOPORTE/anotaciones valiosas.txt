@@ -1,0 +1,12 @@
+pendientes de solucionar:
+
+1 Almacenar oreden de trabajo. listo
+2 Almacenar cédula del trabajador. listo
+3 Almacenar datos en memoria sd. listo
+4 Leer datos de memoria SD y poder modificarlos. No es posible
+5 Al terminhar el recorrido del usuario pueda guardar los datos correctamente. incompleto
+
+Importante de solución más adelante.
+
+1 Guardar valores en unidad de almacenamiento verificar que funcione.
+
