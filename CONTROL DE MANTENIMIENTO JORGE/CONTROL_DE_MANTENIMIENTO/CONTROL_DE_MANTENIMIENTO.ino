@@ -29,7 +29,6 @@ IPAddress ip(192, 168, 1, 177);
 // with the IP address and port you want to use
 // (port 80 is default for HTTP):
 EthernetServer server(80);
-EthernetServer server2(81);
 EthernetClient client;
 
 #define SS_PIN 53
@@ -76,7 +75,6 @@ String horaInicial = "";
 String horaFinal = "";
 String datosUsers = "";
 String valor;
-String readString;
 
 size_t sizeFile;
 
@@ -102,7 +100,6 @@ void setup()
   pantalla.home();
   pantalla.setBacklightPin(BACKLIGHT_PIN, POSITIVE);
   pantalla.setBacklight(HIGH);
-  pinMode(31, OUTPUT);
 
   Serial.print("Initializing SD card...");
 
@@ -150,7 +147,6 @@ void setup()
 
   // start the server
   server.begin();
-  server2.begin();
   Serial.print("server is at ");
   delay(1000);
   pantalla.clear();
@@ -533,10 +529,6 @@ void loop()
             //output HTML data header
             client.println(F("HTTP/1.1 200 OK"));
             client.println(F("Content-Type: text/html"));
-            //client.println("Content-Disposition: attachment;"); // Filname se usa el nombre y el formato a descargar: CSV, TXT, etc.
-
-            //client.println("Content-Disposition: attachment; filename=Userdata.csv"); // Filname se usa el nombre y el formato a descargar: CSV, TXT, etc.
-
             client.println();
             //header
             client.print(F("<!DOCTYPE HTML><html><head><title>Gestion de usuarios</title>"));
@@ -584,9 +576,9 @@ void loop()
                     }
                     if (HTTP_req.indexOf("/D") > 0)
                     {
-                      // client.println("HTTP/1.1 200 OK");                                        //send new page
-                      // client.println("Content-Disposition: attachment; filename=Userdata.csv"); // Filname se usa el nombre y el formato a descargar: CSV, TXT, etc.
-                      // client.println();
+                      client.print(F("download = 'Userdata.csv'"));
+                      datosUsers = "";
+                      valor = "";
                       byte clientBuf[64];
                       int clientCount = 0;
                       while (myFile.available())
@@ -626,12 +618,12 @@ void loop()
 
             client.print(valor);
             client.print(F("<br><br><br>"));
-            //client.print(datosUsers);
+            client.print(datosUsers);
 
             //file end
             client.print(F("<br></body></html>"));
             Serial.print(HTTP_req);
-            //HTTP_req = "";
+            HTTP_req = "";
             break;
           }
           if (c == '\n')
@@ -652,7 +644,5 @@ void loop()
       client.stop();
       Serial.println("client disconnected");
     }
-
-   
   }
 }

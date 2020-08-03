@@ -1,0 +1,6 @@
+{
+    "port": "COM5",
+    "board": "arduino:avr:megaADK",
+    "programmer": "AVRISP mkII",
+    "sketch": "CONTROL DE MANTENIMIENTO JORGE\\CONTROL_DE_MANTENIMIENTO\\CONTROL_DE_MANTENIMIENTO.ino"
+}
