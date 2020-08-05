@@ -521,8 +521,8 @@ void loop()
             {
                 if (client.available())
                 {
-
                     char c = client.read();
+
                     Serial.write(c);
                     HTTP_req += c; // save the HTTP  1 char at a time
 
@@ -543,9 +543,9 @@ void loop()
                                         datosUsers = "";
                                         tabla = "";
                                         tabla = mostrarTabla(myFile, sizeFile);
-                                        Serial.println(tabla);
+                                        //Serial.println(tabla);
                                         datosUsers = mostrarDatosCsv(myFile, sizeFile);
-                                        Serial.println(datosUsers);
+                                        //Serial.println(datosUsers);
                                         contDown = true;
                                     }
                                     else
@@ -569,7 +569,7 @@ void loop()
                         }
                         if (HTTP_req.indexOf("/D") > 0)
                         {
-                            client.println(datosUsers);
+                            client.print(datosUsers);
                             client.stop();
                             client.flush();
                         }
@@ -579,11 +579,14 @@ void loop()
                             tabla = "";
                             contDown = false;
                         }
-                        delay(500);
                         HTTP_req = "";
                     }
+                    if (HTTP_req.indexOf("/favicon.ico ") > 0)
+                    {
+                        client.stop();
+                    }
 
-                    if (c == '\n' && currentLineIsBlank)
+                    if (c == 'n' && currentLineIsBlank)
                     {
                         // send a stan
                         //output HTML data header
@@ -593,7 +596,6 @@ void loop()
                         //header
                         client.print(F("<!DOCTYPE HTML><html><head><title>Gestion de usuarios</title>"));
                         client.print(F("<meta http-equiv='content-type' content='text/html; charset=UTF-8'>"));
-                        //meta-refresh page every x seconds
 
                         client.print(F("</head><body bgcolor='rgb(7, 15, 20)'><br>"));
                         client.print(F("<hr/><hr>"));
@@ -613,18 +615,19 @@ void loop()
                         client.print(F("<p style='color:white;'>"));
 
                         client.print(tabla);
+                        Serial.println(tabla);
                         client.print(F("<br><br><br>"));
 
                         //file end
                         client.print(F("</body></html>"));
                         break;
                     }
-                    if (c == '\n')
+                    if (c == 'n')
                     {
                         // you're starting a new line
                         currentLineIsBlank = true;
                     }
-                    else if (c != '\r')
+                    else if (c != 'r')
                     {
                         // you've gotten a character on the current line
                         currentLineIsBlank = false;
@@ -634,6 +637,7 @@ void loop()
             // give the web browser time to receive the data
             delay(1);
             // close the connection:
+            HTTP_req = "";
             client.stop();
             client.flush();
             Serial.println("client disconnected");
