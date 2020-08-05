@@ -29,18 +29,6 @@ bool datoCorrecto(char key)
     return valor;
 }
 
-byte borrar(String tagLeido, String tagIngresado[])
-{
-    for (byte i = 0; i <= 11; i++)
-    {
-        if (tagLeido == tagIngresado[i])
-        {
-            return i;
-        }
-    }
-    return 0;
-}
-
 String getHora(int number, int number2)
 {
     String hora;
@@ -56,25 +44,10 @@ String getHora(int number, int number2)
     return hora = String(number) + ":" + String(number2);
 }
 
-String getTag(File myFile, unsigned long position)
-{
-    char leer;
-    String tag;
-    myFile.seek(position);
-    while (leer != ';')
-    {
-        leer = myFile.read();
-        if (leer != ';')
-        {
-            tag.concat(leer);
-        }
-    }
-    return tag;
-}
 
 String mostrarTabla(File myFile, size_t sizeFile) // MUESTRA UNA TABLA DE TODOS LOS USUARIOS GUARDADOS
 {
-    String table = "<table border = '2'style='color:white' bgcolor = '#5E332A;'><caption style='color:white'><h3>Reporte de tiempo transcurrido durante el mantenimiento</h3></caption><br><br><tr><th>";  
+    String table = "<table border = '2'style='color:white' bgcolor = '#5E332A;'><caption style='color:white'><h3>Reporte de tiempo transcurrido durante el mantenimiento</h3></caption><br><br><tr><th>";
 
     size_t iter = 0;
     char leer;
@@ -120,9 +93,9 @@ String mostrarTabla(File myFile, size_t sizeFile) // MUESTRA UNA TABLA DE TODOS 
     return table;
 }
 
-String mostrarDatosCsv(File myFile, size_t sizeFile) // SE IMPRIME EN UN PARRAFO PARA GUARADAR CSV
+String mostrarDatosCsv(File myFile, size_t sizeFile) // SE  MUETRAN LOS DATOS PARA SER DESCARGADOS EN EL FICHERO
 {
-    String parrafoCsv = "<p style='color:white';>";
+    String parrafoCsv = "";
 
     size_t iter = 0;
     char leer;
@@ -131,23 +104,7 @@ String mostrarDatosCsv(File myFile, size_t sizeFile) // SE IMPRIME EN UN PARRAFO
     while (iter <= sizeFile)
     {
         leer = myFile.read();
-        switch (leer)
-        {
-        case '\n':
-
-            if (iter == sizeFile)
-            {
-                parrafoCsv.concat(F("</p>"));
-            }
-            else
-            {
-                parrafoCsv.concat(F("<br>"));
-            }
-            break;
-        default:
-            parrafoCsv.concat(leer);
-            break;
-        }
+        parrafoCsv.concat(leer);
         iter++;
     }
     return parrafoCsv;
@@ -189,7 +146,7 @@ void borrarTU(byte identiUsers, String tagIngresado[], String usuarioIngresar[],
 }
 void orgDatos(String usuarioIngresar[], String tagIngresado[])
 {
-    byte control[2] = {0, 0};
+    byte control[2] ={ 0, 0 };
     String tag[10];
     String users[10];
 
