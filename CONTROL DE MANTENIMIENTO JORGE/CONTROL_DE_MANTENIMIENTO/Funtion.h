@@ -43,7 +43,10 @@ String getHora(int number, int number2)
     Serial.println(String(number) + ":" + String(number2));
     return hora = String(number) + ":" + String(number2);
 }
-
+String getDate(int dia, int mes, String ano)
+{
+    return String(dia) + "/" + String(mes) + "/" + ano;
+}
 
 String mostrarTabla(File myFile, size_t sizeFile) // MUESTRA UNA TABLA DE TODOS LOS USUARIOS GUARDADOS
 {

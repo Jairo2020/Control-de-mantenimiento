@@ -121,7 +121,7 @@ void setup()
         myFile = SD.open("DataUser/Userdata.csv", FILE_WRITE);
         if (myFile)
         {
-            myFile.print("TAG; CODIGO DE MAQUINA; OREDEN DE TRABAJO; CEDULA; HORA DE INICIO; HORA TERMINADA \n");
+            myFile.print("TAG; CODIGO DE MAQUINA; OREDEN DE TRABAJO; CEDULA; FECHA DE INGRESO (D/M/Y); HORA DE INICIO; HORA TERMINADA \n");
             // close the file:
             myFile.close();
         }
@@ -252,10 +252,12 @@ void loop()
                     else if (ctrlIngreso == 1 && cedula != "" && indUsers <= 9)
                     {
                         RTC.read(tm);
+                        String ano = String(tmYearToCalendar(tm.Year));
+                        String fecha = getDate(tm.Day, tm.Month, ano);
                         horaInicial = getHora(tm.Hour, tm.Minute);
                         tagIngresado[controlTagIngresado] = tagLeido;
                         controlTagIngresado++;
-                        usuarioIngresar[indUsers] = tagLeido + ";" + codigoMaquina + ";" + ordenTrabajo + ";" + cedula + ";" + horaInicial + ";";
+                        usuarioIngresar[indUsers] = tagLeido + ";" + codigoMaquina + ";" + ordenTrabajo + ";" + cedula + ";" + fecha + ";" + horaInicial + ";";
                         indUsers++;
                         pantalla.clear();
                         pantalla.print("Cedula guardada.");
@@ -416,7 +418,6 @@ void loop()
             {
                 if (SD.begin(4))
                 {
-                    //myFile.seek(0);
                     if (SD.exists("DataUser/Userdata.csv"))
                     {
                         myFile = SD.open("DataUser/Userdata.csv", FILE_WRITE);
@@ -635,7 +636,7 @@ void loop()
                 }
             }
             // give the web browser time to receive the data
-            delay(1);
+            delay(1000);
             // close the connection:
             HTTP_req = "";
             client.stop();
