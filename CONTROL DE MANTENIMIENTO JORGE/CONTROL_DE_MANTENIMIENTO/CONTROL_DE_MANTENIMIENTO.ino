@@ -1,3 +1,5 @@
+/* CONEXIONADO PARA EL LECTOR DE TARJETA RFID */
+//                                         ||
 /* -----------------------------------------------------------------------------------------
                MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
                Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
@@ -9,12 +11,12 @@
    SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
    SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
    */
-#include <SPI.h>
+//#include <SPI.h>
 #include <MFRC522.h>
 #include <LiquidCrystal_I2C.h>
 #include <Ethernet.h>
 #include <Keypad.h>
-#include <TimeLib.h>
+//#include <TimeLib.h>
 #include <DS1307RTC.h>
 #include "Funtion.h"
 #include <SD.h>
@@ -93,7 +95,7 @@ bool controlPrincipal = false;
 void setup()
 {
     Serial.begin(9600);      // Initiate a serial communication
-    SPI.begin();             // Initiate  SPI bus
+    //SPI.begin();             // Initiate  SPI bus
     mfrc522.PCD_Init();      // Initiate MFRC522
     Ethernet.begin(mac, ip); // start the Ethernet connection and the server:
     pantalla.begin(16, 2);
@@ -357,6 +359,7 @@ void loop()
     }
     else if (controlPrincipal == true && tagControl == false)
     {
+        mfrc522.PCD_Init();
         // Look for new cards
         if (!mfrc522.PICC_IsNewCardPresent())
         {
@@ -527,9 +530,9 @@ void loop()
                     Serial.write(c);
                     HTTP_req += c; // save the HTTP  1 char at a time
 
-                    if (HTTP_req.indexOf("/V") > 0 || HTTP_req.indexOf("/D") > 0 || HTTP_req.indexOf("/O") > 0)
+                    if (HTTP_req.indexOf("/V") > 0 || HTTP_req.indexOf("/D") > 0 || HTTP_req.indexOf("/O") > 0 || HTTP_req.indexOf("/R") > 0)
                     {
-                        if (HTTP_req.indexOf("/V") > 0)
+                        if (HTTP_req.indexOf("/V") > 0 || HTTP_req.indexOf("/R") > 0)
                         {
                             if (SD.begin(4))
                             {
@@ -538,16 +541,26 @@ void loop()
                                     myFile = SD.open("DataUser/Userdata.csv");
                                     if (myFile)
                                     {
-                                        size_t iter = 0;
-                                        sizeFile = myFile.size();
-                                        sizeFile = sizeFile - 1;
-                                        datosUsers = "";
-                                        tabla = "";
-                                        tabla = mostrarTabla(myFile, sizeFile);
-                                        //Serial.println(tabla);
-                                        datosUsers = mostrarDatosCsv(myFile, sizeFile);
-                                        //Serial.println(datosUsers);
-                                        contDown = true;
+                                        if (HTTP_req.indexOf("/V") > 0)
+                                        {
+                                            size_t iter = 0;
+                                            sizeFile = myFile.size();
+                                            sizeFile = sizeFile - 1;
+                                            datosUsers = "";
+                                            tabla = "";
+                                            tabla = mostrarTabla(myFile, sizeFile);
+                                            //Serial.println(tabla);
+                                            datosUsers = mostrarDatosCsv(myFile, sizeFile);
+                                            //Serial.println(datosUsers);
+                                            contDown = true;
+                                        }
+                                        if (HTTP_req.indexOf("/R") > 0)
+                                        {
+                                            Serial.println(SD.remove("DataUser/Userdata.csv"));
+                                            myFile = SD.open("DataUser/Userdata.csv", FILE_WRITE);
+                                            myFile.print("TAG; CODIGO DE MAQUINA; OREDEN DE TRABAJO; CEDULA; FECHA DE INGRESO (D/M/Y); HORA DE INICIO; HORA TERMINADA \n");
+                                            //Serial.println("Entra");
+                                        }
                                     }
                                     else
                                     {
@@ -568,6 +581,7 @@ void loop()
                                 tabla = "Error al iniciar SD";
                             }
                         }
+
                         if (HTTP_req.indexOf("/D") > 0)
                         {
                             client.print(datosUsers);
@@ -599,7 +613,7 @@ void loop()
                         client.print(F("<meta http-equiv='content-type' content='text/html; charset=UTF-8'>"));
 
                         client.print(F("</head><body bgcolor='rgb(7, 15, 20)'><br>"));
-                        client.print(F("<hr/><hr>"));
+                        //client.print(F("<hr/><hr>"));
                         client.print(F("<h1 style='color : #3AAA35;'><center>REPORTE DE TIEMPO DE RECORRIDO DE MANTENIMIENTO</center></h1>"));
                         client.print(F("<hr/><hr>"));
                         client.println("<center><p style='color:white;'>");
@@ -609,9 +623,10 @@ void loop()
                         client.print(F("<a href='/O'><button>Ocultar registros</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
                         if (contDown == true)
                         {
-                            client.print(F("<a href='/D'download = 'Userdata.csv'><button>Descargar reporte</button></a>"));
+                            client.print(F("<a href='/D'download = 'Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
+                            client.print(F("<a href='/R'><button>Borrar tabla</button></a>"));
                         }
-
+                        
                         client.print(F("<br><br><br>"));
                         client.print(F("<p style='color:white;'>"));
 

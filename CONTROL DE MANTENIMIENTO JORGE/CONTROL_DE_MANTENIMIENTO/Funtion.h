@@ -31,18 +31,27 @@ bool datoCorrecto(char key)
 
 String getHora(int number, int number2)
 {
-    String hora;
+    String hora = "0";
+    String minuto = "0";
     if (number >= 0 && number < 10)
     {
-        Serial.write('0');
+        hora.concat(String(number));
     }
-    else if (number2 >= 0 && number2 < 10)
+    else
     {
-        Serial.write('0');
+        hora = String(number);
     }
-    Serial.println(String(number) + ":" + String(number2));
-    return hora = String(number) + ":" + String(number2);
+    if (number2 >= 0 && number2 < 10)
+    {
+        minuto.concat(String(number2));
+    }
+    else
+    {
+        minuto = String(number2);
+    }
+    return hora + ":" + minuto;
 }
+
 String getDate(int dia, int mes, String ano)
 {
     return String(dia) + "/" + String(mes) + "/" + ano;
