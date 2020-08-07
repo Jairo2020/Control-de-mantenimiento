@@ -11,12 +11,11 @@
    SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
    SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
    */
-//#include <SPI.h>
+
 #include <MFRC522.h>
 #include <LiquidCrystal_I2C.h>
 #include <Ethernet.h>
 #include <Keypad.h>
-//#include <TimeLib.h>
 #include <DS1307RTC.h>
 #include "Funtion.h"
 #include <SD.h>
@@ -651,7 +650,7 @@ void loop()
                 }
             }
             // give the web browser time to receive the data
-            delay(1000);
+            delay(1);
             // close the connection:
             HTTP_req = "";
             client.stop();
