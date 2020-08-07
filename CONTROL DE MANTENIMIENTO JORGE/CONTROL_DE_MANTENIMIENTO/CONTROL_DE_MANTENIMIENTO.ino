@@ -581,11 +581,12 @@ void loop()
                             }
                         }
 
-                        if (HTTP_req.indexOf("/D") > 0)
+                        if (HTTP_req.indexOf("/D") > 0) // SE REALIZA LA RESPECTIVA DESCARGA DE LOS DATOS DE LA TABLA
                         {
                             client.print(datosUsers);
                             client.stop();
                             client.flush();
+
                         }
                         if (HTTP_req.indexOf("/O") > 0)
                         {
@@ -625,7 +626,7 @@ void loop()
                             client.print(F("<a href='/D'download = 'Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
                             client.print(F("<a href='/R'><button>Borrar tabla</button></a>"));
                         }
-                        
+
                         client.print(F("<br><br><br>"));
                         client.print(F("<p style='color:white;'>"));
 
