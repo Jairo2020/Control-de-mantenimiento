@@ -12,6 +12,7 @@
    SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
    */
 
+#include <SPI.h>
 #include <MFRC522.h>
 #include <LiquidCrystal_I2C.h>
 #include <Ethernet.h>
@@ -94,13 +95,26 @@ bool controlPrincipal = false;
 void setup()
 {
     Serial.begin(9600);      // Initiate a serial communication
-    //SPI.begin();             // Initiate  SPI bus
+    SPI.begin();             // Initiate  SPI bus
     mfrc522.PCD_Init();      // Initiate MFRC522
     Ethernet.begin(mac, ip); // start the Ethernet connection and the server:
     pantalla.begin(16, 2);
     pantalla.home();
     pantalla.setBacklightPin(BACKLIGHT_PIN, POSITIVE);
     pantalla.setBacklight(HIGH);
+    // Check for Ethernet hardware present
+    if (Ethernet.hardwareStatus() == EthernetNoHardware)
+    {
+        Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+        delayMicroseconds(1500);
+        pantalla.clear();
+        pantalla.print("Ver HWRD shield");
+        delayMicroseconds(1500);
+    }
+    if (Ethernet.linkStatus() == LinkOFF)
+    {
+        Serial.println("Ethernet cable is not connected.");
+    }
 
     Serial.print("Initializing SD card...");
 
@@ -132,19 +146,8 @@ void setup()
             Serial.println("error abriendo archivo");
         }
     }
-    // Check for Ethernet hardware present
-    if (Ethernet.hardwareStatus() == EthernetNoHardware)
-    {
-        Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
-        while (true)
-        {
-            delay(1); // do nothing, no point running without Ethernet hardware
-        }
-    }
-    if (Ethernet.linkStatus() == LinkOFF)
-    {
-        Serial.println("Ethernet cable is not connected.");
-    }
+
+
 
     // start the server
     server.begin();
@@ -358,7 +361,6 @@ void loop()
     }
     else if (controlPrincipal == true && tagControl == false)
     {
-        mfrc522.PCD_Init();
         // Look for new cards
         if (!mfrc522.PICC_IsNewCardPresent())
         {
@@ -385,9 +387,9 @@ void loop()
         tagLeido = content.substring(1);
         Serial.println(tagLeido);
 
-        if (tagLeido != "" && controlTagIngresado <= 9)
+        if (tagLeido != "")
         {
-            if (ingresoSalida == 1)
+            if (ingresoSalida == 1 && controlTagIngresado <= 9)
             {
                 if (tagLeido == verifTags(tagIngresado, tagLeido, &identiUsers))
                 {
@@ -416,7 +418,12 @@ void loop()
                     ctrlIngreso = 2;
                 }
             }
-            else if (ingresoSalida == 2)
+            else
+            {
+                pantalla.clear();
+                pantalla.print("Excede # users");
+            }
+            if (ingresoSalida == 2 && controlTagIngresado >= 0)
             {
                 if (SD.begin(4))
                 {
@@ -431,21 +438,23 @@ void loop()
                                 horaFinal = getHora(tm.Hour, tm.Minute);
                                 usuarioIngresar[identiUsers].concat(horaFinal);
                                 myFile.println(usuarioIngresar[identiUsers]);
+                                myFile.flush();
                                 Serial.println("indice = " + String(identiUsers));
                                 Serial.println(usuarioIngresar[identiUsers]);
                                 Serial.println("\nindice = " + String(identiUsers));
                                 borrarTU(identiUsers, tagIngresado, usuarioIngresar, tagLeido, &controlTagIngresado, &indUsers);
                                 orgDatos(usuarioIngresar, tagIngresado);
-                                for (byte i = 0; i <= 9; i++)
-                                {
-                                    Serial.println("Usuarios = " + usuarioIngresar[i]);
-                                    Serial.println("Tags = " + tagIngresado[i]);
-                                }
+                                // for (byte i = 0; i <= 9; i++)
+                                // {
+                                //     Serial.println("Usuarios = " + usuarioIngresar[i]);
+                                //     Serial.println("Tags = " + tagIngresado[i]);
+                                // }
                                 pantalla.clear();
                                 pantalla.home();
                                 pantalla.print("Salida exitosa");
                                 pantalla.setCursor(0, 1);
                                 pantalla.print(horaFinal);
+                                myFile.close();
                                 delay(1000);
                                 pantalla.clear();
                                 pantalla.setCursor(0, 0);
@@ -474,7 +483,7 @@ void loop()
                                 controlPrimario = true;
                                 ingresoSalida = 0;
                             }
-                            myFile.close();
+
                         }
                         else
                         {
@@ -497,11 +506,6 @@ void loop()
                     pantalla.print("SD retirada :(");
                 }
             }
-        }
-        else
-        {
-            pantalla.clear();
-            pantalla.print("Excede # users");
         }
     }
     else if (controlPrimario == false && controlPrincipal == false)
@@ -529,7 +533,7 @@ void loop()
                     Serial.write(c);
                     HTTP_req += c; // save the HTTP  1 char at a time
 
-                    if (HTTP_req.indexOf("/V") > 0 || HTTP_req.indexOf("/D") > 0 || HTTP_req.indexOf("/O") > 0 || HTTP_req.indexOf("/R") > 0)
+                    if (HTTP_req.indexOf("/V") > 0 || HTTP_req.indexOf("/D") > 0 || HTTP_req.indexOf("/O") > 0 || HTTP_req.indexOf("/R") > 0 || HTTP_req.indexOf("/favicon.ico ") > 0)
                     {
                         if (HTTP_req.indexOf("/V") > 0 || HTTP_req.indexOf("/R") > 0)
                         {
@@ -552,12 +556,15 @@ void loop()
                                             datosUsers = mostrarDatosCsv(myFile, sizeFile);
                                             //Serial.println(datosUsers);
                                             contDown = true;
+                                            delayMicroseconds(1000);
                                         }
                                         if (HTTP_req.indexOf("/R") > 0)
                                         {
-                                            Serial.println(SD.remove("DataUser/Userdata.csv"));
+                                            tabla = "";
+                                            SD.remove("DataUser/Userdata.csv");
                                             myFile = SD.open("DataUser/Userdata.csv", FILE_WRITE);
                                             myFile.print("TAG; CODIGO DE MAQUINA; OREDEN DE TRABAJO; CEDULA; FECHA DE INGRESO (D/M/Y); HORA DE INICIO; HORA TERMINADA \n");
+                                            myFile.flush();
                                             //Serial.println("Entra");
                                         }
                                     }
@@ -566,13 +573,13 @@ void loop()
                                         Serial.println("Error abirendo el archivo");
                                         tabla = "Error abirendo el archivo";
                                     }
+                                    myFile.close();
                                 }
                                 else
                                 {
                                     Serial.println("Fichero o archivo que se intenta abrir no existe");
                                     tabla = "Fichero o archivo que se intenta abrir no existe";
                                 }
-                                myFile.close();
                             }
                             else
                             {
@@ -580,13 +587,12 @@ void loop()
                                 tabla = "Error al iniciar SD";
                             }
                         }
-
                         if (HTTP_req.indexOf("/D") > 0) // SE REALIZA LA RESPECTIVA DESCARGA DE LOS DATOS DE LA TABLA
                         {
                             client.print(datosUsers);
-                            client.stop();
                             client.flush();
-
+                            delay(1000);
+                            client.stop();
                         }
                         if (HTTP_req.indexOf("/O") > 0)
                         {
@@ -594,11 +600,11 @@ void loop()
                             tabla = "";
                             contDown = false;
                         }
+                        if (HTTP_req.indexOf("/favicon.ico ") > 0)
+                        {
+                            client.stop();
+                        }
                         HTTP_req = "";
-                    }
-                    if (HTTP_req.indexOf("/favicon.ico ") > 0)
-                    {
-                        client.stop();
                     }
 
                     if (c == 'n' && currentLineIsBlank)
@@ -607,6 +613,7 @@ void loop()
                         //output HTML data header
                         client.println(F("HTTP/1.1 200 OK"));
                         client.println(F("Content-Type: text/html"));
+                        client.println(F("Content-length: 100000"));
                         client.println();
                         //header
                         client.print(F("<!DOCTYPE HTML><html><head><title>Gestion de usuarios</title>"));
@@ -626,12 +633,11 @@ void loop()
                             client.print(F("<a href='/D'download = 'Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
                             client.print(F("<a href='/R'><button>Borrar tabla</button></a>"));
                         }
-
                         client.print(F("<br><br><br>"));
                         client.print(F("<p style='color:white;'>"));
 
                         client.print(tabla);
-                        Serial.println(tabla);
+                        Serial.println(tabla.length());
                         client.print(F("<br><br><br>"));
 
                         //file end
@@ -651,11 +657,13 @@ void loop()
                 }
             }
             // give the web browser time to receive the data
-            delay(1);
+
             // close the connection:
+            client.flush();
+            delay(1);
             HTTP_req = "";
             client.stop();
-            client.flush();
+
             Serial.println("client disconnected");
         }
     }

@@ -64,6 +64,7 @@ String mostrarTabla(File myFile, size_t sizeFile) // MUESTRA UNA TABLA DE TODOS 
     size_t iter = 0;
     char leer;
     boolean sw = true;
+    boolean control = false;
 
     myFile.seek(0);
     while (iter <= sizeFile)
@@ -90,6 +91,7 @@ String mostrarTabla(File myFile, size_t sizeFile) // MUESTRA UNA TABLA DE TODOS 
             else if (iter == sizeFile)
             {
                 table.concat(F("</td></tr></table>"));
+                control = true;
             }
             else
             {
@@ -101,8 +103,16 @@ String mostrarTabla(File myFile, size_t sizeFile) // MUESTRA UNA TABLA DE TODOS 
             break;
         }
         iter++;
+        delay(1);
     }
-    return table;
+    if (control == true)
+    {
+        return table;
+    }
+    else
+    {
+        return "";
+    }
 }
 
 String mostrarDatosCsv(File myFile, size_t sizeFile) // SE  MUETRAN LOS DATOS PARA SER DESCARGADOS EN EL FICHERO
@@ -118,6 +128,7 @@ String mostrarDatosCsv(File myFile, size_t sizeFile) // SE  MUETRAN LOS DATOS PA
         leer = myFile.read();
         parrafoCsv.concat(leer);
         iter++;
+        delay(1);
     }
     return parrafoCsv;
 }
