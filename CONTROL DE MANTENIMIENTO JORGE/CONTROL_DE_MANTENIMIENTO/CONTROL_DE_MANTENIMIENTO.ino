@@ -75,8 +75,7 @@ String hora = "";
 String codigoMaquina = "";
 String horaInicial = "";
 String horaFinal = "";
-String datosUsers = "";
-String tabla;
+String tabla = "";
 
 size_t sizeFile;
 
@@ -522,7 +521,7 @@ void loop()
             Serial.println("new client");
             // an http request ends with a blank line
             boolean currentLineIsBlank = true;
-            boolean contDown = false;
+            boolean contDown[3] ={ false, false, false };
 
             while (client.connected())
             {
@@ -537,6 +536,15 @@ void loop()
                     {
                         if (HTTP_req.indexOf("/V") > 0 || HTTP_req.indexOf("/R") > 0)
                         {
+                            contDown[0] = true;
+                            contDown[1] = true;
+                            if (HTTP_req.indexOf("/R") > 0)
+                            {
+                                contDown[2] = true;
+                            }
+                        }
+                        if (HTTP_req.indexOf("/D") > 0) // SE REALIZA LA RESPECTIVA DESCARGA DE LOS DATOS DE LA TABLA
+                        {
                             if (SD.begin(4))
                             {
                                 if (SD.exists("DataUser/Userdata.csv"))
@@ -544,28 +552,95 @@ void loop()
                                     myFile = SD.open("DataUser/Userdata.csv");
                                     if (myFile)
                                     {
-                                        if (HTTP_req.indexOf("/V") > 0)
+                                        mostrarDatosCSV(myFile, client, sizeFile);
+                                        client.flush();
+                                        delay(100);
+                                        client.stop();
+                                    }
+                                    else
+                                    {
+                                        Serial.println("Error abirendo el archivo");
+                                        tabla = "Error abirendo el archivo";
+                                    }
+                                    myFile.close();
+                                }
+                                else
+                                {
+                                    Serial.println("Fichero o archivo que se intenta abrir no existe");
+                                    tabla = "Fichero o archivo que se intenta abrir no existe";
+                                }
+                            }
+                            else
+                            {
+                                Serial.println("Error al iniciar SD");
+                                tabla = "Error al iniciar SD";
+                            }
+                        }
+                        if (HTTP_req.indexOf("/O") > 0)
+                        {
+                            tabla = "";
+                            contDown[0] = false;
+                        }
+                        if (HTTP_req.indexOf("/favicon.ico ") > 0)
+                        {
+                            client.stop();
+                        }
+                        HTTP_req = "";
+                    }
+
+                    if (c == 'n' && currentLineIsBlank)
+                    {
+                        // send a stan
+                        //output HTML data header
+                        client.println(F("HTTP/1.1 200 OK"));
+                        client.println(F("Content-Type: text/html"));
+                        client.println();
+                        //header
+                        client.print(F("<!DOCTYPE HTML><html><head><title>Gestion de usuarios</title>"));
+                        client.print(F("<meta http-equiv='content-type' content='text/html; charset=UTF-8'>"));
+
+                        client.print(F("</head><body bgcolor='rgb(7, 15, 20)'><br>"));
+                        //client.print(F("<hr/><hr>"));
+                        client.print(F("<h1 style='color : #3AAA35;'><center>REPORTE DE TIEMPO DE RECORRIDO DE MANTENIMIENTO</center></h1>"));
+                        client.print(F("<hr/><hr>"));
+                        client.println("<center><p style='color:white;'>");
+
+                        client.println("</p></center><br>");
+                        client.print(F("<a href='/V'><button>  Ver registros  -----</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
+                        client.print(F("<a href='/O'><button>Ocultar registros</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
+                        if (contDown[0] == true)
+                        {
+                            client.print(F("<a href='/D'download = 'Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
+                            client.print(F("<a href='/R'><button>Borrar tabla</button></a>"));
+                        }
+
+                        client.print(F("<br><br>"));
+                        client.print(F("<p style='color:white;'>"));
+                        if (contDown[1] == true)
+                        {
+                            if (SD.begin(4))
+                            {
+                                if (SD.exists("DataUser/Userdata.csv"))
+                                {
+                                    myFile = SD.open("DataUser/Userdata.csv");
+                                    if (myFile)
+                                    {
+                                        if (contDown[1] == true)
                                         {
-                                            size_t iter = 0;
                                             sizeFile = myFile.size();
                                             sizeFile = sizeFile - 1;
-                                            datosUsers = "";
                                             tabla = "";
-                                            tabla = mostrarTabla(myFile, sizeFile);
-                                            //Serial.println(tabla);
-                                            datosUsers = mostrarDatosCsv(myFile, sizeFile);
-                                            //Serial.println(datosUsers);
-                                            contDown = true;
-                                            delayMicroseconds(1000);
+                                            mostrarTable(myFile, client, sizeFile);
+                                            contDown[1] = false;
                                         }
-                                        if (HTTP_req.indexOf("/R") > 0)
+                                        if (contDown[2] == true)
                                         {
                                             tabla = "";
                                             SD.remove("DataUser/Userdata.csv");
                                             myFile = SD.open("DataUser/Userdata.csv", FILE_WRITE);
                                             myFile.print("TAG; CODIGO DE MAQUINA; OREDEN DE TRABAJO; CEDULA; FECHA DE INGRESO (D/M/Y); HORA DE INICIO; HORA TERMINADA \n");
                                             myFile.flush();
-                                            //Serial.println("Entra");
+                                            contDown[2] = false;
                                         }
                                     }
                                     else
@@ -587,58 +662,8 @@ void loop()
                                 tabla = "Error al iniciar SD";
                             }
                         }
-                        if (HTTP_req.indexOf("/D") > 0) // SE REALIZA LA RESPECTIVA DESCARGA DE LOS DATOS DE LA TABLA
-                        {
-                            client.print(datosUsers);
-                            client.flush();
-                            delay(1000);
-                            client.stop();
-                        }
-                        if (HTTP_req.indexOf("/O") > 0)
-                        {
-                            datosUsers = "";
-                            tabla = "";
-                            contDown = false;
-                        }
-                        if (HTTP_req.indexOf("/favicon.ico ") > 0)
-                        {
-                            client.stop();
-                        }
-                        HTTP_req = "";
-                    }
-
-                    if (c == 'n' && currentLineIsBlank)
-                    {
-                        // send a stan
-                        //output HTML data header
-                        client.println(F("HTTP/1.1 200 OK"));
-                        client.println(F("Content-Type: text/html"));
-                        client.println(F("Content-length: 100000"));
-                        client.println();
-                        //header
-                        client.print(F("<!DOCTYPE HTML><html><head><title>Gestion de usuarios</title>"));
-                        client.print(F("<meta http-equiv='content-type' content='text/html; charset=UTF-8'>"));
-
-                        client.print(F("</head><body bgcolor='rgb(7, 15, 20)'><br>"));
-                        //client.print(F("<hr/><hr>"));
-                        client.print(F("<h1 style='color : #3AAA35;'><center>REPORTE DE TIEMPO DE RECORRIDO DE MANTENIMIENTO</center></h1>"));
-                        client.print(F("<hr/><hr>"));
-                        client.println("<center><p style='color:white;'>");
-
-                        client.println("</p></center><br>");
-                        client.print(F("<a href='/V'><button>  Ver registros  -----</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
-                        client.print(F("<a href='/O'><button>Ocultar registros</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
-                        if (contDown == true)
-                        {
-                            client.print(F("<a href='/D'download = 'Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
-                            client.print(F("<a href='/R'><button>Borrar tabla</button></a>"));
-                        }
-                        client.print(F("<br><br><br>"));
-                        client.print(F("<p style='color:white;'>"));
-
                         client.print(tabla);
-                        Serial.println(tabla.length());
-                        client.print(F("<br><br><br>"));
+                        client.print(F("<br><br>"));
 
                         //file end
                         client.print(F("</body></html>"));

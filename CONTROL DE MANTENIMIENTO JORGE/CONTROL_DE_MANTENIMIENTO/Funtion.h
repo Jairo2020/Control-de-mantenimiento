@@ -57,14 +57,13 @@ String getDate(int dia, int mes, String ano)
     return String(dia) + "/" + String(mes) + "/" + ano;
 }
 
-String mostrarTabla(File myFile, size_t sizeFile) // MUESTRA UNA TABLA DE TODOS LOS USUARIOS GUARDADOS
+void mostrarTable(File myFile, EthernetClient client, size_t sizeFile)
 {
-    String table = "<table border = '2'style='color:white' bgcolor = '#5E332A;'><caption style='color:white'><h3>Reporte de tiempo transcurrido durante el mantenimiento</h3></caption><br><br><tr><th>";
-
+    String table = "<table border = '2'style='color:white' style='border: blue'; bgcolor = '#5E332A;'><caption style='color:white'><h3>Reporte de tiempo transcurrido durante el mantenimiento</h3></caption><br><br><tr><th>";
+    client.print(table);
     size_t iter = 0;
     char leer;
     boolean sw = true;
-    boolean control = false;
 
     myFile.seek(0);
     while (iter <= sizeFile)
@@ -75,62 +74,47 @@ String mostrarTabla(File myFile, size_t sizeFile) // MUESTRA UNA TABLA DE TODOS 
         case ';':
             if (sw == true)
             {
-                table.concat(F("</th><th>"));
+                client.print(F("</th><th>"));
             }
             else
             {
-                table.concat(F("</td><td>"));
+                client.print(F("</td><td>"));
             }
             break;
         case '\n':
             if (sw == true && iter < sizeFile)
             {
-                table.concat(F("</th></tr><tr><td>"));
+                client.print(F("</th></tr><tr><td>"));
                 sw = false;
             }
             else if (iter == sizeFile)
             {
-                table.concat(F("</td></tr></table>"));
-                control = true;
+                client.print(F("</td></tr></table>"));
             }
             else
             {
-                table.concat(F("</td></tr><tr><td>"));
+                client.print(F("</td></tr><tr><td>"));
             }
             break;
         default:
-            table.concat(leer);
+            client.print(leer);
             break;
         }
         iter++;
-        delay(1);
-    }
-    if (control == true)
-    {
-        return table;
-    }
-    else
-    {
-        return "";
     }
 }
 
-String mostrarDatosCsv(File myFile, size_t sizeFile) // SE  MUETRAN LOS DATOS PARA SER DESCARGADOS EN EL FICHERO
+void mostrarDatosCSV(File myFile, EthernetClient client, size_t sizeFile)// SE  MUETRAN LOS DATOS PARA SER DESCARGADOS EN EL FICHERO
 {
-    String parrafoCsv = "";
-
-    size_t iter = 0;
     char leer;
-
+    size_t iter = 0;
     myFile.seek(0);
     while (iter <= sizeFile)
     {
         leer = myFile.read();
-        parrafoCsv.concat(leer);
+        client.print(leer);
         iter++;
-        delay(1);
     }
-    return parrafoCsv;
 }
 
 String verifTags(String tagIngresado[], String tagLeido, byte *identiUsers)

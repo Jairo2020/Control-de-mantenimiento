@@ -10,3 +10,5 @@ Importante de solución más adelante.
 
 1 Guardar valores en unidad de almacenamiento verificar que funcione.
 
+Nota: Al final el codigo es modificado debido a que no se podía almacenar todos los datos de la memoria SD en una variable, especificamente se cambian funciones
+
