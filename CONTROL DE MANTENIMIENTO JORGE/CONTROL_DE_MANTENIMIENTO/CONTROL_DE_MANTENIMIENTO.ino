@@ -388,40 +388,45 @@ void loop()
 
         if (tagLeido != "")
         {
-            if (ingresoSalida == 1 && controlTagIngresado <= 9)
+            if (ingresoSalida == 1)
             {
-                if (tagLeido == verifTags(tagIngresado, tagLeido, &identiUsers))
+                if (controlTagIngresado <= 9)
                 {
-                    pantalla.clear();
-                    pantalla.home();
-                    pantalla.print("Usuario ya fue ");
-                    pantalla.setCursor(0, 1);
-                    pantalla.print("fue ingresado");
-                    delay(1500);
-                    pantalla.clear();
-                    pantalla.setCursor(0, 0);
-                    pantalla.print("Coloca tarjeta");
+
+                    if (tagLeido == verifTags(tagIngresado, tagLeido, &identiUsers))
+                    {
+                        pantalla.clear();
+                        pantalla.home();
+                        pantalla.print("Usuario ya fue ");
+                        pantalla.setCursor(0, 1);
+                        pantalla.print("fue ingresado");
+                        delay(1500);
+                        pantalla.clear();
+                        pantalla.setCursor(0, 0);
+                        pantalla.print("Coloca tarjeta");
+                    }
+                    else
+                    {
+                        pantalla.clear();
+                        pantalla.setCursor(0, 0);
+                        pantalla.print("Codigo maquina:");
+                        delay(2000);
+                        pantalla.clear();
+                        pantalla.setCursor(0, 0);
+                        pantalla.print("(D) Ok - (C) Clr");
+                        pantalla.setCursor(0, 1);
+                        tagControl = true;
+                        ingresoSalida = 0;
+                        ctrlIngreso = 2;
+                    }
                 }
                 else
                 {
                     pantalla.clear();
-                    pantalla.setCursor(0, 0);
-                    pantalla.print("Codigo maquina:");
-                    delay(2000);
-                    pantalla.clear();
-                    pantalla.setCursor(0, 0);
-                    pantalla.print("(D) Ok - (C) Clr");
-                    pantalla.setCursor(0, 1);
-                    tagControl = true;
-                    ingresoSalida = 0;
-                    ctrlIngreso = 2;
+                    pantalla.print("Excede # users");
                 }
             }
-            else
-            {
-                pantalla.clear();
-                pantalla.print("Excede # users");
-            }
+
             if (ingresoSalida == 2 && controlTagIngresado >= 0)
             {
                 if (SD.begin(4))
@@ -554,7 +559,7 @@ void loop()
                                     {
                                         mostrarDatosCSV(myFile, client, sizeFile);
                                         client.flush();
-                                        delay(100);
+                                        //delay(100);
                                         client.stop();
                                     }
                                     else
@@ -610,7 +615,7 @@ void loop()
                         client.print(F("<a href='/O'><button>Ocultar registros</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
                         if (contDown[0] == true)
                         {
-                            client.print(F("<a href='/D'download = 'Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
+                            client.print(F("<a href='D' download='Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
                             client.print(F("<a href='/R'><button>Borrar tabla</button></a>"));
                         }
 
@@ -632,6 +637,7 @@ void loop()
                                             tabla = "";
                                             mostrarTable(myFile, client, sizeFile);
                                             contDown[1] = false;
+                                            client.print(tabla);
                                         }
                                         if (contDown[2] == true)
                                         {
@@ -641,6 +647,8 @@ void loop()
                                             myFile.print("TAG; CODIGO DE MAQUINA; OREDEN DE TRABAJO; CEDULA; FECHA DE INGRESO (D/M/Y); HORA DE INICIO; HORA TERMINADA \n");
                                             myFile.flush();
                                             contDown[2] = false;
+                                            contDown[1] == false;
+                                            contDown[0] == false;
                                         }
                                     }
                                     else
@@ -662,7 +670,7 @@ void loop()
                                 tabla = "Error al iniciar SD";
                             }
                         }
-                        client.print(tabla);
+                        
                         client.print(F("<br><br>"));
 
                         //file end
