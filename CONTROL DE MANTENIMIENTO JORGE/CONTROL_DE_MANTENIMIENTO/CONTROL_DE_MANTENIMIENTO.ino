@@ -21,10 +21,10 @@
 #include "Funtion.h"
 #include <SD.h>
 
-   // Enter a MAC address and IP address for your controller below.
-   // The IP address will be dependent on your local network:
-byte mac[] ={
-    0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+// Enter a MAC address and IP address for your controller below.
+// The IP address will be dependent on your local network:
+byte mac[] = {
+    0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 IPAddress ip(192, 168, 1, 177);
 
 // Initialize the Ethernet server library
@@ -51,14 +51,14 @@ LiquidCrystal_I2C pantalla(I2C_ADDR, En_pin, Rw_pin, Rs_pin, D4_pin, D5_pin, D6_
 
 const byte FILA = 4;    // CUATRO FILAS
 const byte COLUMNA = 4; // TRES COLUMNAS
-char MATRIZ[FILA][COLUMNA] ={
-    { '1', '2', '3', 'A' },
-    { '4', '5', '6', 'B' },
-    { '7', '8', '9', 'C' },
-    { '*', '0', '#', 'D' } };
+char MATRIZ[FILA][COLUMNA] = {
+    {'1', '2', '3', 'A'},
+    {'4', '5', '6', 'B'},
+    {'7', '8', '9', 'C'},
+    {'*', '0', '#', 'D'}};
 
-byte ArregloColumna[COLUMNA] ={ 6, 7, 8, 9 }; // PINES QUE CORRESPONDEN A LAS COLUMNAS DEL TECLADO MATRICIAL
-byte ArregloFila[FILA] ={ 2, 3, 4, 5 };       // PINES QUE CORRESPONDEN A LAS FILAS DEL TECLADO MATRICIAL
+byte ArregloColumna[COLUMNA] = {6, 7, 8, 9}; // PINES QUE CORRESPONDEN A LAS COLUMNAS DEL TECLADO MATRICIAL
+byte ArregloFila[FILA] = {2, 3, 4, 5};       // PINES QUE CORRESPONDEN A LAS FILAS DEL TECLADO MATRICIAL
 
 Keypad keypad = Keypad(makeKeymap(MATRIZ), ArregloFila, ArregloColumna, FILA, COLUMNA);
 
@@ -145,8 +145,6 @@ void setup()
             Serial.println("error abriendo archivo");
         }
     }
-
-
 
     // start the server
     server.begin();
@@ -487,7 +485,6 @@ void loop()
                                 controlPrimario = true;
                                 ingresoSalida = 0;
                             }
-
                         }
                         else
                         {
@@ -526,7 +523,7 @@ void loop()
             Serial.println("new client");
             // an http request ends with a blank line
             boolean currentLineIsBlank = true;
-            boolean contDown[3] ={ false, false, false };
+            boolean contDown[3] = {false, false, false};
 
             while (client.connected())
             {
@@ -615,7 +612,7 @@ void loop()
                         client.print(F("<a href='/O'><button>Ocultar registros</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
                         if (contDown[0] == true)
                         {
-                            client.print(F("<a href='D' download='Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
+                            client.print(F("<a href='/D' download='Userdata.csv'><button>Descargar reporte</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp"));
                             client.print(F("<a href='/R'><button>Borrar tabla</button></a>"));
                         }
 
@@ -670,8 +667,9 @@ void loop()
                                 tabla = "Error al iniciar SD";
                             }
                         }
-                        
+
                         client.print(F("<br><br>"));
+                        client.print(tabla);
 
                         //file end
                         client.print(F("</body></html>"));
