@@ -25,7 +25,9 @@
 // The IP address will be dependent on your local network:
 byte mac[] = {
     0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-IPAddress ip(192, 168, 1, 177);
+IPAddress ip(10, 2, 155, 250);      //Asingamos la IP al Arduino
+IPAddress gateway(10,2,155, 1);     // Puerta de enlace o Router
+IPAddress subnet(255, 255, 255, 0); //Mascara de Sub Red (Subnet Mask)
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
